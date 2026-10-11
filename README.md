@@ -216,8 +216,6 @@ flowchart LR
 
 ## Smart contract specification
 
-> The interface below is the **target design**. Treat the code in `contracts/allowance-vault` as authoritative once it exists.
-
 ### Types
 
 ```rust
