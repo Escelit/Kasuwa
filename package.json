@@ -20,7 +20,7 @@
     "prepare": "husky || true"
   },
   "devDependencies": {
-    "@commitlint/cli": "^19.7.1",
+    "@commitlint/cli": "^21.2.4",
     "@commitlint/config-conventional": "^19.7.1",
     "@types/node": "^26.6.5",
     "husky": "^9.1.7",
