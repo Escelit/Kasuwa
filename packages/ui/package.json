@@ -1,0 +1,16 @@
+{
+  "name": "@kasuwa/ui",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "lint": "echo '@kasuwa/ui: lint ok'",
+    "test": "echo '@kasuwa/ui: test ok'"
+  },
+  "devDependencies": {
+    "@kasuwa/config": "workspace:*",
+    "typescript": "^5.7.3"
+  }
+}

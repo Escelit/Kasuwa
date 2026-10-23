@@ -1,0 +1,15 @@
+{
+  "name": "@kasuwa/relayer",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "build": "tsc",
+    "lint": "echo '@kasuwa/relayer: lint ok'",
+    "test": "echo '@kasuwa/relayer: test ok'",
+    "dev": "echo '@kasuwa/relayer: dev ok'"
+  },
+  "devDependencies": {
+    "@kasuwa/config": "workspace:*",
+    "typescript": "^5.7.3"
+  }
+}

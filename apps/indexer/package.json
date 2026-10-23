@@ -1,0 +1,15 @@
+{
+  "name": "@kasuwa/indexer",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "build": "tsc",
+    "lint": "echo '@kasuwa/indexer: lint ok'",
+    "test": "echo '@kasuwa/indexer: test ok'",
+    "dev": "echo '@kasuwa/indexer: dev ok'"
+  },
+  "devDependencies": {
+    "@kasuwa/config": "workspace:*",
+    "typescript": "^5.7.3"
+  }
+}

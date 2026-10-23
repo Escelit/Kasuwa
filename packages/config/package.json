@@ -1,0 +1,16 @@
+{
+  "name": "@kasuwa/config",
+  "version": "0.1.0",
+  "private": true,
+  "main": "index.js",
+  "files": [
+    "tsconfig.base.json",
+    "eslint.config.js",
+    "prettier.config.js"
+  ],
+  "scripts": {
+    "lint": "echo '@kasuwa/config: lint ok'",
+    "build": "echo '@kasuwa/config: build ok'",
+    "test": "echo '@kasuwa/config: test ok'"
+  }
+}

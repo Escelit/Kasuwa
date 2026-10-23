@@ -1,0 +1,1 @@
+//! Allowance vault types placeholder

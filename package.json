@@ -1,0 +1,30 @@
+{
+  "name": "kasuwa",
+  "version": "0.1.0",
+  "private": true,
+  "license": "Apache-2.0",
+  "type": "module",
+  "scripts": {
+    "dev": "turbo dev",
+    "build": "turbo build",
+    "lint": "turbo lint && cargo fmt --check && cargo clippy --all-targets -- -D warnings",
+    "test": "turbo test && cargo test",
+    "test:vectors": "turbo test:vectors",
+    "contracts:build": "bash scripts/contracts-build.sh",
+    "contracts:deploy:local": "bash scripts/contracts-deploy-local.sh",
+    "contracts:deploy:testnet": "bash scripts/contracts-deploy-testnet.sh",
+    "sdk:generate": "bash scripts/sdk-generate.sh",
+    "infra:up": "bash scripts/infra-up.sh",
+    "infra:down": "bash scripts/infra-down.sh",
+    "prepare": "husky || true"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^19.7.1",
+    "@commitlint/config-conventional": "^19.7.1",
+    "husky": "^9.1.7",
+    "prettier": "^3.5.0",
+    "turbo": "^2.4.0",
+    "typescript": "^5.7.3"
+  },
+  "packageManager": "pnpm@11.4.0"
+}
