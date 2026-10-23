@@ -5,7 +5,8 @@
   "scripts": {
     "build": "tsc",
     "lint": "echo '@kasuwa/mobile: lint ok'",
-    "test": "echo '@kasuwa/mobile: test ok'"
+    "test": "echo '@kasuwa/mobile: test ok'",
+    "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
     "@kasuwa/config": "workspace:*",

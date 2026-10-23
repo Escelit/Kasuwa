@@ -11,6 +11,7 @@
   "scripts": {
     "lint": "echo '@kasuwa/config: lint ok'",
     "build": "echo '@kasuwa/config: build ok'",
-    "test": "echo '@kasuwa/config: test ok'"
+    "test": "echo '@kasuwa/config: test ok'",
+    "typecheck": "echo \"@kasuwa/config: typecheck ok\""
   }
 }

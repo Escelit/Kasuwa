@@ -1,0 +1,113 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  typescript:
+    name: TypeScript
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint
+        run: pnpm turbo lint
+
+      - name: Typecheck
+        run: pnpm turbo typecheck
+
+      - name: Test
+        run: pnpm turbo test
+
+      - name: Build
+        run: pnpm turbo build
+
+  rust:
+    name: Rust & Contracts
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32v1-none,wasm32-unknown-unknown
+          components: rustfmt,clippy
+
+      - name: Cache Cargo dependencies
+        uses: Swatinem/rust-cache@v2
+
+      - name: Install Stellar CLI
+        run: |
+          STELLAR_VERSION="28.1.0"
+          ARCH="x86_64-unknown-linux-gnu"
+          TAR_NAME="stellar-cli-${STELLAR_VERSION}-${ARCH}.tar.gz"
+          URL="https://github.com/stellar/stellar-cli/releases/download/v${STELLAR_VERSION}/${TAR_NAME}"
+          echo "Downloading Stellar CLI from ${URL}..."
+          curl -fsSL "${URL}" -o /tmp/stellar.tar.gz
+          tar -xzf /tmp/stellar.tar.gz -C /tmp
+          sudo mv /tmp/stellar /usr/local/bin/stellar
+          stellar --version
+
+      - name: Check Rust formatting
+        run: cargo fmt --check
+
+      - name: Run Clippy
+        run: cargo clippy --all-targets -- -D warnings
+
+      - name: Run Cargo tests
+        run: cargo test
+
+      - name: Build Soroban contracts
+        run: |
+          cd contracts
+          stellar contract build
+
+  vectors:
+    name: Protocol Vectors
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run protocol vectors suite
+        run: pnpm test:vectors

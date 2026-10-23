@@ -6,7 +6,8 @@
     "build": "tsc",
     "lint": "echo '@kasuwa/relayer: lint ok'",
     "test": "echo '@kasuwa/relayer: test ok'",
-    "dev": "echo '@kasuwa/relayer: dev ok'"
+    "dev": "echo '@kasuwa/relayer: dev ok'",
+    "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
     "@kasuwa/config": "workspace:*",

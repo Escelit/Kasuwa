@@ -6,7 +6,8 @@
     "build": "tsc",
     "lint": "echo '@kasuwa/indexer: lint ok'",
     "test": "echo '@kasuwa/indexer: test ok'",
-    "dev": "echo '@kasuwa/indexer: dev ok'"
+    "dev": "echo '@kasuwa/indexer: dev ok'",
+    "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
     "@kasuwa/config": "workspace:*",

@@ -6,7 +6,8 @@
     "build": "tsc",
     "lint": "echo '@kasuwa/dashboard: lint ok'",
     "test": "echo '@kasuwa/dashboard: test ok'",
-    "dev": "echo '@kasuwa/dashboard: dev ok'"
+    "dev": "echo '@kasuwa/dashboard: dev ok'",
+    "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
     "@kasuwa/config": "workspace:*",

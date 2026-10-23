@@ -14,7 +14,8 @@
     "build": "tsc",
     "lint": "echo '@kasuwa/protocol: lint ok'",
     "test": "echo '@kasuwa/protocol: test ok'",
-    "test:vectors": "echo '@kasuwa/protocol: vectors ok'"
+    "test:vectors": "echo '@kasuwa/protocol: vectors ok'",
+    "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
     "@kasuwa/config": "workspace:*",

@@ -7,6 +7,7 @@
   "scripts": {
     "dev": "turbo dev",
     "build": "turbo build",
+    "typecheck": "turbo typecheck",
     "lint": "turbo lint && cargo fmt --check && cargo clippy --all-targets -- -D warnings",
     "test": "turbo test && cargo test",
     "test:vectors": "turbo test:vectors",
