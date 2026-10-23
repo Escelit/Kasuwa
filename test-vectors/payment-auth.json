@@ -1,1 +1,314 @@
-[]
+{
+  "_comment": "Kasuwa Protocol v1 Test Vectors. Generated with committed P-256 test key.",
+  "test_key": {
+    "label": "TEST ONLY - DO NOT USE IN PRODUCTION",
+    "curve": "secp256r1 (NIST P-256)",
+    "private_key_pkcs8_hex": "308187020100301306072a8648ce3d020106082a8648ce3d030107046d306b020101042089aade911074130cddf3aedd6e59f4372dd1c953c73cd28b7398b28f73beafbba14403420004e802e2689071e7b0726c0c5ea1fb8cd9ee11b91ea05605d456a2e257fb311cbbc56f14c8218617d44277760655e156a3cc32eac09ac0b09237c9db6745159d0d",
+    "public_key_uncompressed_hex": "04e802e2689071e7b0726c0c5ea1fb8cd9ee11b91ea05605d456a2e257fb311cbbc56f14c8218617d44277760655e156a3cc32eac09ac0b09237c9db6745159d0d"
+  },
+  "context": {
+    "domain_tag": "kasuwa-v1:payment-auth",
+    "contract_id_hex": "1111111111111111111111111111111111111111111111111111111111111111",
+    "network_passphrase": "Test SDF Network ; September 2015",
+    "network_id_hex": "cee0302d59844d32bdca915c8203dd44b33fbb7edc19051ea37abedf28ecd472"
+  },
+  "vectors_count": 18,
+  "vectors": [
+    {
+      "id": "pr-01-standard",
+      "type": "PaymentRequest",
+      "note": "Standard payment request with 10 USDC (7 decimals) and typical expiry",
+      "inputs": {
+        "type": "PaymentRequest",
+        "version": 1,
+        "merchant": "2222222222222222222222222222222222222222222222222222222222222222",
+        "amount": "10000000",
+        "tokenHint": 0,
+        "requestId": "0102030405060708",
+        "expiresAt": 1700000000
+      },
+      "expected_encoded_hex": "01222222222222222222222222222222222222222222222222222222222222222280ade2040001020304050607086553f100",
+      "expected_base64url": "ASIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIigK3iBAABAgMEBQYHCGVT8QA",
+      "expected_hash": "207e64b774f5cf4336e6fcc86a9cc8b694d5ac64fa402aafd91fbae58bb28f98"
+    },
+    {
+      "id": "pr-02-zero-amount",
+      "type": "PaymentRequest",
+      "note": "Payment request boundary case: zero amount (1-byte varint 0x00)",
+      "inputs": {
+        "type": "PaymentRequest",
+        "version": 1,
+        "merchant": "2222222222222222222222222222222222222222222222222222222222222222",
+        "amount": "0",
+        "tokenHint": 0,
+        "requestId": "a1b2c3d4e5f60718",
+        "expiresAt": 1700000500
+      },
+      "expected_encoded_hex": "0122222222222222222222222222222222222222222222222222222222222222220000a1b2c3d4e5f607186553f2f4",
+      "expected_base64url": "ASIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiAAChssPU5fYHGGVT8vQ",
+      "expected_hash": "1e2c1378c4aab6606830613207abd36ded81417ab777120b7148738a3d8606d3"
+    },
+    {
+      "id": "pr-03-max-varint",
+      "type": "PaymentRequest",
+      "note": "Payment request boundary case: max u64 amount (10-byte LEB128 varint)",
+      "inputs": {
+        "type": "PaymentRequest",
+        "version": 1,
+        "merchant": "2222222222222222222222222222222222222222222222222222222222222222",
+        "amount": "18446744073709551615",
+        "tokenHint": 1,
+        "requestId": "ffffffffffffffff",
+        "expiresAt": 1700001000
+      },
+      "expected_encoded_hex": "012222222222222222222222222222222222222222222222222222222222222222ffffffffffffffffff0101ffffffffffffffff6553f4e8",
+      "expected_base64url": "ASIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIi____________AQH__________2VT9Og",
+      "expected_hash": "0a0406ea31f1e4868610b0fc1b28be8f728e9a9830e8fb1fd0cec668c1d9e19e"
+    },
+    {
+      "id": "pr-04-expires-boundary",
+      "type": "PaymentRequest",
+      "note": "Payment request boundary case: max u32 expires_at (0xFFFFFFFF)",
+      "inputs": {
+        "type": "PaymentRequest",
+        "version": 1,
+        "merchant": "3333333333333333333333333333333333333333333333333333333333333333",
+        "amount": "5000000",
+        "tokenHint": 0,
+        "requestId": "1234567890abcdef",
+        "expiresAt": 4294967295
+      },
+      "expected_encoded_hex": "013333333333333333333333333333333333333333333333333333333333333333c096b102001234567890abcdefffffffff",
+      "expected_base64url": "ATMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzwJaxAgASNFZ4kKvN7_____8",
+      "expected_hash": "c7868fb04979654532f4b799b0e0d66bcf547be567f989796e729f8cb2b965be"
+    },
+    {
+      "id": "pr-05-tokenhint-max",
+      "type": "PaymentRequest",
+      "note": "Payment request boundary case: token_hint u8 max (255)",
+      "inputs": {
+        "type": "PaymentRequest",
+        "version": 1,
+        "merchant": "3333333333333333333333333333333333333333333333333333333333333333",
+        "amount": "250000",
+        "tokenHint": 255,
+        "requestId": "0000000000000001",
+        "expiresAt": 1700002000
+      },
+      "expected_encoded_hex": "01333333333333333333333333333333333333333333333333333333333333333390a10fff00000000000000016553f8d0",
+      "expected_base64url": "ATMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzkKEP_wAAAAAAAAABZVP40A",
+      "expected_hash": "8d6e3873bde5ff58752e041efb0b747cf4420567d934bd5d479d56106c53392a"
+    },
+    {
+      "id": "auth-01-standard",
+      "type": "PaymentAuthorization",
+      "note": "Standard payment authorization with real P-256 signature",
+      "inputs": {
+        "version": 1,
+        "allowanceId": "1",
+        "paymentId": "44444444444444444444444444444444",
+        "merchant": "2222222222222222222222222222222222222222222222222222222222222222",
+        "amount": "5000000",
+        "issuedAt": 1700000000,
+        "expiresAt": 1700086400,
+        "signature": "e559062024fe48ae683a6ee4f46a38b8c484c3e94597e3785a0ba6dd5edff4997b5cb21f184e7c87edac635f4b4545d533e5c6fa361b7c991baac55702665e90"
+      },
+      "expected_canonical_hex": "010000000000000001444444444444444444444444444444442222222222222222222222222222222222222222222222222222222222222222c096b102006553f1000065554280",
+      "expected_encoded_hex": "010000000000000001444444444444444444444444444444442222222222222222222222222222222222222222222222222222222222222222c096b102006553f1000065554280e559062024fe48ae683a6ee4f46a38b8c484c3e94597e3785a0ba6dd5edff4997b5cb21f184e7c87edac635f4b4545d533e5c6fa361b7c991baac55702665e90",
+      "expected_base64url": "AQAAAAAAAAABRERERERERERERERERERERCIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiwJaxAgBlU_EAAGVVQoDlWQYgJP5Irmg6buT0aji4xITD6UWX43haC6bdXt_0mXtcsh8YTnyH7axjX0tFRdUz5cb6Nht8mRuqxVcCZl6Q",
+      "expected_hash": "2172b8481b35002892597e4d565673fec6d5d060bf7dc5f43288d2f0e6c668b0"
+    },
+    {
+      "id": "auth-02-zero-amount",
+      "type": "PaymentAuthorization",
+      "note": "Payment authorization boundary case: amount 0 (1-byte varint)",
+      "inputs": {
+        "version": 1,
+        "allowanceId": "100",
+        "paymentId": "55555555555555555555555555555555",
+        "merchant": "2222222222222222222222222222222222222222222222222222222222222222",
+        "amount": "0",
+        "issuedAt": 1700000000,
+        "expiresAt": 1700003600,
+        "signature": "198fc1e23ca4cc6faa26f3a06a1295314106b96431277a7d6ed6f0a7a40e4acb70da93e406fa83aea9563eedd8209cd8d3db4f7d26d3666176b2e94d76b8de43"
+      },
+      "expected_canonical_hex": "01000000000000006455555555555555555555555555555555222222222222222222222222222222222222222222222222222222222222222200006553f100006553ff10",
+      "expected_encoded_hex": "01000000000000006455555555555555555555555555555555222222222222222222222222222222222222222222222222222222222222222200006553f100006553ff10198fc1e23ca4cc6faa26f3a06a1295314106b96431277a7d6ed6f0a7a40e4acb70da93e406fa83aea9563eedd8209cd8d3db4f7d26d3666176b2e94d76b8de43",
+      "expected_base64url": "AQAAAAAAAABkVVVVVVVVVVVVVVVVVVVVVSIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiAABlU_EAAGVT_xAZj8HiPKTMb6om86BqEpUxQQa5ZDEnen1u1vCnpA5Ky3Dak-QG-oOuqVY-7dggnNjT2099JtNmYXay6U12uN5D",
+      "expected_hash": "2369e89628202c0a799659fc29b42ab7deeef97d5ae86519b24c16ebaae0b4d9"
+    },
+    {
+      "id": "auth-03-max-varint-amount",
+      "type": "PaymentAuthorization",
+      "note": "Payment authorization boundary case: max u64 amount (10-byte varint)",
+      "inputs": {
+        "version": 1,
+        "allowanceId": "999",
+        "paymentId": "66666666666666666666666666666666",
+        "merchant": "3333333333333333333333333333333333333333333333333333333333333333",
+        "amount": "18446744073709551615",
+        "issuedAt": 1700000000,
+        "expiresAt": 1700086400,
+        "signature": "ebdce7aa9dec428145b6c6fb73b6d907d599293553db9c44725089df72b45939559abe0fd9a682a62dd7b7942a34151e2e2b8d737d3fe7b4958aa3213040712f"
+      },
+      "expected_canonical_hex": "0100000000000003e7666666666666666666666666666666663333333333333333333333333333333333333333333333333333333333333333ffffffffffffffffff01006553f1000065554280",
+      "expected_encoded_hex": "0100000000000003e7666666666666666666666666666666663333333333333333333333333333333333333333333333333333333333333333ffffffffffffffffff01006553f1000065554280ebdce7aa9dec428145b6c6fb73b6d907d599293553db9c44725089df72b45939559abe0fd9a682a62dd7b7942a34151e2e2b8d737d3fe7b4958aa3213040712f",
+      "expected_base64url": "AQAAAAAAAAPnZmZmZmZmZmZmZmZmZmZmZjMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMz____________AQBlU_EAAGVVQoDr3OeqnexCgUW2xvtzttkH1ZkpNVPbnERyUInfcrRZOVWavg_ZpoKmLde3lCo0FR4uK41zfT_ntJWKoyEwQHEv",
+      "expected_hash": "8504ab6edf644bedddd61f88b3d288babe8fdc13294f5647ca0cd1560c8d3259"
+    },
+    {
+      "id": "auth-04-max-allowance-id",
+      "type": "PaymentAuthorization",
+      "note": "Payment authorization boundary case: max u64 allowance_id",
+      "inputs": {
+        "version": 1,
+        "allowanceId": "18446744073709551615",
+        "paymentId": "77777777777777777777777777777777",
+        "merchant": "2222222222222222222222222222222222222222222222222222222222222222",
+        "amount": "1000000",
+        "issuedAt": 1700000000,
+        "expiresAt": 1700086400,
+        "signature": "9f4264e9d4ffb570e82320f31a8c0e0c0a6ce7ae68d0558c7cd4b24e9fe4277c4390971020cadcdff4306e99a9e2192f3b3afaa3b5a5e7fd405c75ef137031b7"
+      },
+      "expected_canonical_hex": "01ffffffffffffffff777777777777777777777777777777772222222222222222222222222222222222222222222222222222222222222222c0843d006553f1000065554280",
+      "expected_encoded_hex": "01ffffffffffffffff777777777777777777777777777777772222222222222222222222222222222222222222222222222222222222222222c0843d006553f10000655542809f4264e9d4ffb570e82320f31a8c0e0c0a6ce7ae68d0558c7cd4b24e9fe4277c4390971020cadcdff4306e99a9e2192f3b3afaa3b5a5e7fd405c75ef137031b7",
+      "expected_base64url": "Af__________d3d3d3d3d3d3d3d3d3d3dyIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiwIQ9AGVT8QAAZVVCgJ9CZOnU_7Vw6CMg8xqMDgwKbOeuaNBVjHzUsk6f5Cd8Q5CXECDK3N_0MG6ZqeIZLzs6-qO1pef9QFx17xNwMbc",
+      "expected_hash": "de62f59526bdbca4597953d181a01c6eb321fccf26222ac47afe4ed017d97a40"
+    },
+    {
+      "id": "auth-05-zero-allowance-id",
+      "type": "PaymentAuthorization",
+      "note": "Payment authorization boundary case: allowance_id = 0",
+      "inputs": {
+        "version": 1,
+        "allowanceId": "0",
+        "paymentId": "88888888888888888888888888888888",
+        "merchant": "3333333333333333333333333333333333333333333333333333333333333333",
+        "amount": "750000",
+        "issuedAt": 1700000000,
+        "expiresAt": 1700086400,
+        "signature": "929d39db16ff3b5f3ce008808482348b9f4f1a0a70871cfa8c1e86627c46eff9733bee00c26687372eb74b8ffd0bfcbb72b8c769c8bc09d174043ec333cd9df0"
+      },
+      "expected_canonical_hex": "010000000000000000888888888888888888888888888888883333333333333333333333333333333333333333333333333333333333333333b0e32d006553f1000065554280",
+      "expected_encoded_hex": "010000000000000000888888888888888888888888888888883333333333333333333333333333333333333333333333333333333333333333b0e32d006553f1000065554280929d39db16ff3b5f3ce008808482348b9f4f1a0a70871cfa8c1e86627c46eff9733bee00c26687372eb74b8ffd0bfcbb72b8c769c8bc09d174043ec333cd9df0",
+      "expected_base64url": "AQAAAAAAAAAAiIiIiIiIiIiIiIiIiIiIiDMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzsOMtAGVT8QAAZVVCgJKdOdsW_ztfPOAIgISCNIufTxoKcIcc-owehmJ8Ru_5czvuAMJmhzcut0uP_Qv8u3K4x2nIvAnRdAQ-wzPNnfA",
+      "expected_hash": "27b8e0291b94c729f39062624cb83181f73a9fe54979bd294afb9c6e1d50c5c0"
+    },
+    {
+      "id": "auth-06-all-zero-payment-id",
+      "type": "PaymentAuthorization",
+      "note": "Payment authorization boundary case: all-zero 16-byte payment_id",
+      "inputs": {
+        "version": 1,
+        "allowanceId": "50",
+        "paymentId": "00000000000000000000000000000000",
+        "merchant": "2222222222222222222222222222222222222222222222222222222222222222",
+        "amount": "123456",
+        "issuedAt": 1700000000,
+        "expiresAt": 1700086400,
+        "signature": "e04560c348df95cf567c37221fa4c108a2b0f743ae53e4f1f0365f9995e9d1cc61bc4fdafe105709202da55e6531361cb27198ae6e04b893cea0a127416c5eca"
+      },
+      "expected_canonical_hex": "010000000000000032000000000000000000000000000000002222222222222222222222222222222222222222222222222222222222222222c0c407006553f1000065554280",
+      "expected_encoded_hex": "010000000000000032000000000000000000000000000000002222222222222222222222222222222222222222222222222222222222222222c0c407006553f1000065554280e04560c348df95cf567c37221fa4c108a2b0f743ae53e4f1f0365f9995e9d1cc61bc4fdafe105709202da55e6531361cb27198ae6e04b893cea0a127416c5eca",
+      "expected_base64url": "AQAAAAAAAAAyAAAAAAAAAAAAAAAAAAAAACIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiwMQHAGVT8QAAZVVCgOBFYMNI35XPVnw3Ih-kwQiisPdDrlPk8fA2X5mV6dHMYbxP2v4QVwkgLaVeZTE2HLJxmK5uBLiTzqChJ0FsXso",
+      "expected_hash": "baba12300f1ee261e5558ce9ad7d71b31ecaa43e38caba8b4b5023bcc7d7f690"
+    },
+    {
+      "id": "auth-07-all-ff-payment-id",
+      "type": "PaymentAuthorization",
+      "note": "Payment authorization boundary case: all-FF 16-byte payment_id",
+      "inputs": {
+        "version": 1,
+        "allowanceId": "51",
+        "paymentId": "ffffffffffffffffffffffffffffffff",
+        "merchant": "3333333333333333333333333333333333333333333333333333333333333333",
+        "amount": "654321",
+        "issuedAt": 1700000000,
+        "expiresAt": 1700086400,
+        "signature": "52b6521cedd665d4a64b7e71bb466c9fc3e101e44742533b77e4db5d756fedb133645cdf52b2d36ad86b3c9d28b76d6cf1557b28b4650e32df56fcf7141b04f8"
+      },
+      "expected_canonical_hex": "010000000000000033ffffffffffffffffffffffffffffffff3333333333333333333333333333333333333333333333333333333333333333f1f727006553f1000065554280",
+      "expected_encoded_hex": "010000000000000033ffffffffffffffffffffffffffffffff3333333333333333333333333333333333333333333333333333333333333333f1f727006553f100006555428052b6521cedd665d4a64b7e71bb466c9fc3e101e44742533b77e4db5d756fedb133645cdf52b2d36ad86b3c9d28b76d6cf1557b28b4650e32df56fcf7141b04f8",
+      "expected_base64url": "AQAAAAAAAAAz_____________________zMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMz8fcnAGVT8QAAZVVCgFK2Uhzt1mXUpkt-cbtGbJ_D4QHkR0JTO3fk2111b-2xM2Rc31Ky02rYazydKLdtbPFVeyi0ZQ4y31b89xQbBPg",
+      "expected_hash": "fd623cd153edab616b71e6ae0b519ee1fe78dd3dfbd0f11aa0ab9463919810c2"
+    },
+    {
+      "id": "auth-08-max-u40-expiry",
+      "type": "PaymentAuthorization",
+      "note": "Payment authorization boundary case: max u40 expires_at (1099511627775)",
+      "inputs": {
+        "version": 1,
+        "allowanceId": "123",
+        "paymentId": "99999999999999999999999999999999",
+        "merchant": "2222222222222222222222222222222222222222222222222222222222222222",
+        "amount": "10000000",
+        "issuedAt": 1700000000,
+        "expiresAt": 1099511627775,
+        "signature": "d6a6e38201a3c43456b2922c72c50ffa062686af56f393aa7c125dfa8aef3e340a8586afe5c6ceb08a5453b4d6000f2d6f6e378b7eff58e90ef2398202c1f6b4"
+      },
+      "expected_canonical_hex": "01000000000000007b99999999999999999999999999999999222222222222222222222222222222222222222222222222222222222222222280ade204006553f100ffffffffff",
+      "expected_encoded_hex": "01000000000000007b99999999999999999999999999999999222222222222222222222222222222222222222222222222222222222222222280ade204006553f100ffffffffffd6a6e38201a3c43456b2922c72c50ffa062686af56f393aa7c125dfa8aef3e340a8586afe5c6ceb08a5453b4d6000f2d6f6e378b7eff58e90ef2398202c1f6b4",
+      "expected_base64url": "AQAAAAAAAAB7mZmZmZmZmZmZmZmZmZmZmSIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIigK3iBABlU_EA_______WpuOCAaPENFaykixyxQ_6BiaGr1bzk6p8El36iu8-NAqFhq_lxs6wilRTtNYADy1vbjeLfv9Y6Q7yOYICwfa0",
+      "expected_hash": "92f6cdd30be18c2a85312565a583c57eada0a19168f6be5051852d6db13d6e83"
+    },
+    {
+      "id": "auth-09-issued-at-zero",
+      "type": "PaymentAuthorization",
+      "note": "Payment authorization boundary case: issued_at = 0",
+      "inputs": {
+        "version": 1,
+        "allowanceId": "124",
+        "paymentId": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "merchant": "3333333333333333333333333333333333333333333333333333333333333333",
+        "amount": "10000000",
+        "issuedAt": 0,
+        "expiresAt": 1700086400,
+        "signature": "71ee9fb629e347961024f4be664125f12705825e4b153c07726670fef62dd9121b1b90632c96c103a29d5510722726c5d23f84d7bc1799d859902fb9c24ef0cd"
+      },
+      "expected_canonical_hex": "01000000000000007caaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa333333333333333333333333333333333333333333333333333333333333333380ade20400000000000065554280",
+      "expected_encoded_hex": "01000000000000007caaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa333333333333333333333333333333333333333333333333333333333333333380ade2040000000000006555428071ee9fb629e347961024f4be664125f12705825e4b153c07726670fef62dd9121b1b90632c96c103a29d5510722726c5d23f84d7bc1799d859902fb9c24ef0cd",
+      "expected_base64url": "AQAAAAAAAAB8qqqqqqqqqqqqqqqqqqqqqjMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzgK3iBAAAAAAAAGVVQoBx7p-2KeNHlhAk9L5mQSXxJwWCXksVPAdyZnD-9i3ZEhsbkGMslsEDop1VEHInJsXSP4TXvBeZ2FmQL7nCTvDN",
+      "expected_hash": "48e9027312c1248cdbad0b3c08e4b259476de2afa93b4400e6b318616800def3"
+    },
+    {
+      "id": "norm-01-high-s",
+      "type": "SignatureNormalization",
+      "note": "High-S signature where s > n/2 is normalized to canonical low-S (n - s)",
+      "inputs": {
+        "raw_signature_hex": "4a5b6c7d8e9f00112233445566778899aabbccddeeff00112233445566778899ffffffff00000000ffffffffffffffffbce6faada7179e84f3b9cac2fc632169"
+      },
+      "expected_normalized_hex": "4a5b6c7d8e9f00112233445566778899aabbccddeeff0011223344556677889900000000000000000000000000000000000000000000000000000000000003e8",
+      "expected_hash": "b99b5dc1c54d00497dadd030cecece42b0c2bbad874c4600245cc10957cb0670"
+    },
+    {
+      "id": "der-01-standard-len",
+      "type": "DerSignatureConversion",
+      "note": "DER signature of 70 bytes: both r and s high-bits are 0 (no 0x00 prefix)",
+      "inputs": {
+        "der_hex": "3044022011223344556677889900aabbccddeeff0102030405060708090a0b0c0d0e0f1002200102030405060708090a0b0c0d0e0f1011223344556677889900aabbccddeeff"
+      },
+      "expected_raw_hex": "11223344556677889900aabbccddeeff0102030405060708090a0b0c0d0e0f100102030405060708090a0b0c0d0e0f1011223344556677889900aabbccddeeff",
+      "expected_hash": "905c12f8e70b85072ba9bca7442a2b53726298e9e4e54c62b62aae45e3e3ced5"
+    },
+    {
+      "id": "der-02-leading-zero-r",
+      "type": "DerSignatureConversion",
+      "note": "DER signature of 71 bytes: r high-bit is 1, requiring 0x00 prefix in DER",
+      "inputs": {
+        "der_hex": "304502210080223344556677889900aabbccddeeff0102030405060708090a0b0c0d0e0f1002200102030405060708090a0b0c0d0e0f1011223344556677889900aabbccddeeff"
+      },
+      "expected_raw_hex": "80223344556677889900aabbccddeeff0102030405060708090a0b0c0d0e0f100102030405060708090a0b0c0d0e0f1011223344556677889900aabbccddeeff",
+      "expected_hash": "8a53a6db2d325eb78c7024a26f450b5b6290add66b2ed49d4bff51c8d04a6a28"
+    },
+    {
+      "id": "der-03-leading-zero-both",
+      "type": "DerSignatureConversion",
+      "note": "DER signature of 72 bytes: both r and s high-bits are 1, requiring 0x00 prefix",
+      "inputs": {
+        "der_hex": "3046022100a0223344556677889900aabbccddeeff0102030405060708090a0b0c0d0e0f10022100b002030405060708090a0b0c0d0e0f1011223344556677889900aabbccddeeff"
+      },
+      "expected_raw_hex": "a0223344556677889900aabbccddeeff0102030405060708090a0b0c0d0e0f10b002030405060708090a0b0c0d0e0f1011223344556677889900aabbccddeeff",
+      "expected_hash": "27126db0fee05a6aac498a1a4d9035200479698a5e422dcf1cfe9219a281e688"
+    }
+  ]
+}
