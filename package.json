@@ -22,7 +22,7 @@
   },
   "devDependencies": {
     "@commitlint/cli": "^19.7.1",
-    "@commitlint/config-conventional": "^19.7.1",
+    "@commitlint/config-conventional": "^21.2.4",
     "@stellar/stellar-sdk": "^17.4.0",
     "@types/node": "^26.6.5",
     "husky": "^9.1.7",
