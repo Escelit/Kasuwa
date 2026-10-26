@@ -10,4 +10,7 @@ use soroban_sdk::contract;
 pub struct AllowanceVault;
 
 #[cfg(test)]
+extern crate std;
+
+#[cfg(test)]
 mod test;
