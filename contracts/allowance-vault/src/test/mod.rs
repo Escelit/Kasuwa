@@ -1,2 +1,1 @@
-#[test]
-fn placeholder() {}
+mod storage_tests;
