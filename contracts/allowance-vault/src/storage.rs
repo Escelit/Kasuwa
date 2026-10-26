@@ -131,6 +131,12 @@ pub fn has_allowance(env: &Env, id: u64) -> bool {
     has
 }
 
+/// Loads an allowance from persistent storage without extending TTL (pure view).
+pub fn get_allowance_view(env: &Env, id: u64) -> Option<Allowance> {
+    let key = DataKey::Allowance(id);
+    env.storage().persistent().get(&key)
+}
+
 /// Loads an allowance from persistent storage, extending TTL if present.
 pub fn get_allowance(env: &Env, id: u64) -> Option<Allowance> {
     let key = DataKey::Allowance(id);
@@ -182,6 +188,15 @@ pub fn mark_payment_used(env: &Env, allowance_id: u64, payment_id: &BytesN<16>) 
 // Shortfall Records (Persistent)
 // Keyed by device_key -> Vec<ShortfallRecord>
 // ---------------------------------------------------------------------------
+
+/// Retrieves the shortfall history recorded against a device key without extending TTL (pure view).
+pub fn get_shortfalls_view(env: &Env, device_key: &BytesN<65>) -> Vec<ShortfallRecord> {
+    let key = DataKey::Shortfalls(device_key.clone());
+    env.storage()
+        .persistent()
+        .get(&key)
+        .unwrap_or_else(|| Vec::new(env))
+}
 
 /// Retrieves the shortfall history recorded against a device key.
 pub fn get_shortfalls(env: &Env, device_key: &BytesN<65>) -> Vec<ShortfallRecord> {

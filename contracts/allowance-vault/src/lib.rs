@@ -392,6 +392,59 @@ impl AllowanceVault {
             SettleResult::Rejected(RejectReason::Insufficient)
         }
     }
+
+    /// Maximum authorizations permitted in a single `settle_batch` invocation.
+    ///
+    /// # Resource Limit Justification
+    /// Soroban transaction resource limit is 100M CPU instructions.
+    /// In the Soroban host runtime, secp256r1 signature verification consumes ~1.8M instructions.
+    /// Token cross-contract transfers, persistent storage reads/writes, and event publishing
+    /// consume approximately ~1.2M instructions per item, totaling ~3.0M instructions per item.
+    /// A maximum batch limit of 25 items requires ~75M instructions, comfortably fitting within
+    /// the 100M transaction budget while preserving a 25% safety margin for metering variations.
+    pub const MAX_BATCH_SIZE: u32 = 25;
+
+    /// Settles a batch of signed authorizations in sequential order.
+    ///
+    /// Never reverts the batch because of one bad item: evaluates each authorization independently
+    /// and returns a per-item `SettleResult`. Reverts if items length exceeds `MAX_BATCH_SIZE`.
+    pub fn settle_batch(
+        env: Env,
+        items: soroban_sdk::Vec<(PaymentAuth, BytesN<64>)>,
+    ) -> soroban_sdk::Vec<SettleResult> {
+        if items.len() > Self::MAX_BATCH_SIZE {
+            soroban_sdk::panic_with_error!(&env, VaultError::BatchTooLarge);
+        }
+
+        let mut results = soroban_sdk::Vec::new(&env);
+        for item in items.iter() {
+            let (auth, sig) = item;
+            let result = Self::settle(env.clone(), auth, sig);
+            results.push_back(result);
+        }
+
+        results
+    }
+
+    /// Read-only view returning the allowance record, if present. Does not mutate storage.
+    pub fn get_allowance(env: Env, id: u64) -> Option<Allowance> {
+        storage::get_allowance_view(&env, id)
+    }
+
+    /// Read-only view returning recorded shortfalls for a customer device key. Does not mutate storage.
+    pub fn get_shortfalls(env: Env, device_key: BytesN<65>) -> soroban_sdk::Vec<ShortfallRecord> {
+        storage::get_shortfalls_view(&env, &device_key)
+    }
+
+    /// Permissionless helper that extends the TTL of persistent entries for an allowance.
+    pub fn extend_ttl(env: Env, allowance_id: u64) -> Result<(), VaultError> {
+        if !storage::has_allowance(&env, allowance_id) {
+            return Err(VaultError::AllowanceNotFound);
+        }
+        storage::extend_allowance_ttl(&env, allowance_id);
+        storage::extend_instance_ttl(&env);
+        Ok(())
+    }
 }
 
 #[cfg(test)]
