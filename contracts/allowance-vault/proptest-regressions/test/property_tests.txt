@@ -1,0 +1,7 @@
+# Seeds for failure cases proptest has generated in the past. It is
+# automatically read and these particular cases re-run before any
+# novel cases are generated.
+#
+# It is recommended to check this file in to source control so that
+# everyone who runs the test benefits from these saved cases.
+cc 4a94ef797b25b3618f1dd7b26e99e66dce81237e34915c7d057477a49aef4881 # shrinks to steps = [AdvanceTime(214396), AdvanceTime(184156), AdvanceTime(206249), SettleOverCap { id_idx: 0 }]
