@@ -135,6 +135,33 @@ fn test_top_up_allowance() {
 }
 
 #[test]
+fn test_top_up_overflow_and_invalid_amounts() {
+    let f = TestFixture::setup();
+
+    let valid_until = f.env.ledger().timestamp() + 86400;
+    let allowance_id = f.vault_client.create_allowance(
+        &f.owner,
+        &f.token_address,
+        &20_000_000,
+        &valid_until,
+        &f.device_key,
+        &5_000_000,
+    );
+
+    // Zero amount rejected
+    let res_zero = f.vault_client.try_top_up(&allowance_id, &0);
+    assert_eq!(res_zero, Err(Ok(VaultError::InvalidAmount)));
+
+    // Negative amount rejected
+    let res_neg = f.vault_client.try_top_up(&allowance_id, &-5_000_000);
+    assert_eq!(res_neg, Err(Ok(VaultError::InvalidAmount)));
+
+    // Overflow amount rejected
+    let res_overflow = f.vault_client.try_top_up(&allowance_id, &i128::MAX);
+    assert_eq!(res_overflow, Err(Ok(VaultError::ArithmeticOverflow)));
+}
+
+#[test]
 fn test_settle_happy_path() {
     let f = TestFixture::setup();
 
