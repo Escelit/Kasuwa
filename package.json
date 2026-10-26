@@ -11,6 +11,7 @@
     "lint": "turbo lint && cargo fmt --check && cargo clippy --all-targets -- -D warnings",
     "test": "turbo test && cargo test",
     "test:vectors": "turbo test:vectors",
+    "test:integration": "vitest run packages/sdk/test/integration.test.ts",
     "contracts:build": "bash scripts/contracts-build.sh",
     "contracts:deploy:local": "bash scripts/contracts-deploy-local.sh",
     "contracts:deploy:testnet": "bash scripts/contracts-deploy-testnet.sh",
@@ -22,11 +23,14 @@
   "devDependencies": {
     "@commitlint/cli": "^19.7.1",
     "@commitlint/config-conventional": "^19.7.1",
+    "@stellar/stellar-sdk": "^17.4.0",
     "@types/node": "^26.6.5",
     "husky": "^9.1.7",
     "prettier": "^3.5.0",
+    "tsx": "^4.23.15",
     "turbo": "^2.4.0",
-    "typescript": "^5.7.3"
+    "typescript": "^5.7.3",
+    "vitest": "^3.2.7"
   },
   "packageManager": "pnpm@11.4.0"
 }
