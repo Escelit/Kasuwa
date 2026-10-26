@@ -205,7 +205,7 @@ The contract MUST evaluate the following reject conditions in order:
 
 | Reason | Condition |
 |---|---|
-| `UnknownAllowance` | `allowance_id` not found in persistent contract storage. |
+| `UnknownAllowance` | `allowance_id` not found in persistent contract storage, or allowance is in `Closed` status. |
 | `WrongMerchant` | `auth.merchant` does not match the settlement transaction recipient or caller. |
 | `BadSignature` | secp256r1 verification fails against `allowance.device_key` on the signed digest, or $s > \lfloor n/2 \rfloor$. |
 | `Expired` | Current ledger timestamp $> \text{auth.expires\_at}$. |

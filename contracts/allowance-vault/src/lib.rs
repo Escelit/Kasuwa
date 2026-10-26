@@ -159,6 +159,88 @@ impl AllowanceVault {
         Ok(())
     }
 
+    /// Requests premature close of an active allowance (e.g. lost phone).
+    ///
+    /// Requires owner authorization. Transitions status from Active to Closing.
+    /// Freezes further top-ups, but allows already-issued offline authorizations to settle
+    /// until the reclaim settlement window elapses.
+    pub fn request_close(env: Env, allowance_id: u64) -> Result<(), VaultError> {
+        let mut allowance =
+            storage::get_allowance(&env, allowance_id).ok_or(VaultError::AllowanceNotFound)?;
+
+        allowance.owner.require_auth();
+
+        if allowance.status != Status::Active {
+            return Err(VaultError::AllowanceNotActive);
+        }
+
+        let now = env.ledger().timestamp();
+        allowance.status = Status::Closing;
+        allowance.close_requested_at = Some(now);
+
+        storage::set_allowance(&env, allowance_id, &allowance);
+
+        env.events().publish(
+            (symbol_short!("close_req"), allowance_id),
+            (allowance.owner, now),
+        );
+
+        Ok(())
+    }
+
+    /// Reclaims unspent escrowed funds back to the allowance owner.
+    ///
+    /// Requires owner authorization. Allowed only after:
+    /// `now >= max(valid_until, close_requested_at.unwrap_or(0)) + max_payment_ttl + grace`
+    ///
+    /// Moves remaining balance to owner and marks allowance Closed.
+    /// Idempotent-safe: subsequent calls return Err(VaultError::AlreadyClosed) without moving funds.
+    pub fn reclaim(env: Env, allowance_id: u64) -> Result<i128, VaultError> {
+        let mut allowance =
+            storage::get_allowance(&env, allowance_id).ok_or(VaultError::AllowanceNotFound)?;
+
+        allowance.owner.require_auth();
+
+        if allowance.status == Status::Closed {
+            return Err(VaultError::AlreadyClosed);
+        }
+
+        let config = storage::get_config(&env)?;
+        let close_req = allowance.close_requested_at.unwrap_or(0);
+        let base_time = allowance.valid_until.max(close_req);
+
+        let window_end = base_time
+            .checked_add(config.max_payment_ttl)
+            .and_then(|t| t.checked_add(config.grace_period))
+            .ok_or(VaultError::ArithmeticOverflow)?;
+
+        let now = env.ledger().timestamp();
+        if now < window_end {
+            return Err(VaultError::ReclaimTooEarly);
+        }
+
+        let remaining = allowance.balance;
+        allowance.balance = 0;
+        allowance.status = Status::Closed;
+        storage::set_allowance(&env, allowance_id, &allowance);
+
+        if remaining > 0 {
+            let contract_address = env.current_contract_address();
+            token::Client::new(&env, &allowance.token).transfer(
+                &contract_address,
+                &allowance.owner,
+                &remaining,
+            );
+        }
+
+        env.events().publish(
+            (symbol_short!("reclaim"), allowance_id),
+            (allowance.owner, remaining),
+        );
+
+        Ok(remaining)
+    }
+
     /// Settles an authorized payment on-chain.
     ///
     /// Permissionless: anyone (relayer, merchant, third party) may submit authorizations.
