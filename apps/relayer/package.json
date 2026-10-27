@@ -2,15 +2,31 @@
   "name": "@kasuwa/relayer",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "scripts": {
     "build": "tsc",
     "lint": "echo '@kasuwa/relayer: lint ok'",
-    "test": "echo '@kasuwa/relayer: test ok'",
-    "dev": "echo '@kasuwa/relayer: dev ok'",
+    "test": "vitest run",
+    "dev": "tsx watch src/index.ts",
+    "start": "node dist/index.js",
     "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@fastify/rate-limit": "^9.1.0",
+    "@kasuwa/db": "workspace:*",
+    "@kasuwa/protocol": "workspace:*",
+    "@kasuwa/sdk": "workspace:*",
+    "bullmq": "^5.81.5",
+    "fastify": "^4.29.1",
+    "fastify-plugin": "^4.5.1",
+    "pino": "^9.14.0",
+    "zod": "^3.25.76"
   },
   "devDependencies": {
     "@kasuwa/config": "workspace:*",
-    "typescript": "^5.7.3"
+    "@types/node": "^26.6.5",
+    "tsx": "^4.23.15",
+    "typescript": "^5.9.3",
+    "vitest": "^3.2.7"
   }
 }
