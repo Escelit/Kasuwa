@@ -1,1 +1,1 @@
-export const mobileDb = {};
+export { getDb } from './database';
