@@ -4,14 +4,21 @@
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
   "scripts": {
     "build": "tsc",
     "lint": "echo '@kasuwa/risk: lint ok'",
-    "test": "echo '@kasuwa/risk: test ok'",
+    "test": "vitest run",
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
     "@kasuwa/config": "workspace:*",
-    "typescript": "^5.7.3"
+    "typescript": "^5.9.3",
+    "vitest": "^3.2.7"
   }
 }
