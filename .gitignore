@@ -7,6 +7,9 @@ dist/
 build/
 .turbo/
 target/
+.next/
+out/
+*.tsbuildinfo
 
 # Environment
 .env
