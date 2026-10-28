@@ -74,4 +74,24 @@ async function runMigrations(db: SQLite.SQLiteDatabase): Promise<void> {
       created_at    INTEGER NOT NULL
     );
   `);
+
+  // Migration 004: merchant allowance snapshot cache synced from indexer
+  await db.execAsync(`
+    CREATE TABLE IF NOT EXISTS merchant_allowance_snapshots (
+      allowance_id    TEXT    NOT NULL PRIMARY KEY,
+      owner           TEXT    NOT NULL,
+      balance_bucket  TEXT    NOT NULL,
+      valid_until     INTEGER NOT NULL,
+      age_seconds     INTEGER NOT NULL,
+      shortfall_count INTEGER NOT NULL DEFAULT 0,
+      total_shortfall TEXT    NOT NULL DEFAULT '0',
+      status          TEXT    NOT NULL,
+      last_synced_at  INTEGER NOT NULL,
+      device_key_hex  TEXT
+    );
+    CREATE TABLE IF NOT EXISTS sync_metadata (
+      key   TEXT NOT NULL PRIMARY KEY,
+      value TEXT NOT NULL
+    );
+  `);
 }

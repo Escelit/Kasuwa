@@ -138,7 +138,7 @@ async function signDigestRaw(
   // This is unlike native platform APIs (iOS SecKeyCreateSignature / Android
   // Signature) which return ASN.1 DER. No derToRaw() call needed here.
   const sigRaw = new Uint8Array(
-    await subtle.sign({ name: 'ECDSA', hash: 'SHA-256' }, privateKey, digest),
+    await subtle.sign({ name: 'ECDSA', hash: 'SHA-256' }, privateKey, digest as any),
   );
 
   // sigRaw is already 64-byte r||s; just normalize low-S.

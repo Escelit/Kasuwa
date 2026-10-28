@@ -8,7 +8,7 @@
  * This file is only loaded in release builds (or when __DEV__ is false).
  * In development, DeviceKey.ts falls back to SoftwareDeviceKey.
  */
-import { NativeModules, Platform } from 'react-native';
+import { NativeModules } from 'react-native';
 import { derToRaw, normalizeLowS } from '@kasuwa/protocol';
 import {
   type DeviceKey,

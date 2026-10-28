@@ -7,7 +7,6 @@
 import { getDb } from '../../db/database';
 import {
   outboxReducer,
-  isExpired,
   type OutboxEntry,
   type OutboxAction,
   type OutboxStatus,

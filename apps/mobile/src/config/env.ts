@@ -8,7 +8,7 @@
  * @see https://docs.expo.dev/guides/environment-variables/
  */
 
-function requireEnv(key: string): string {
+export function requireEnv(key: string): string {
   const value = process.env[key];
   if (!value) {
     throw new Error(

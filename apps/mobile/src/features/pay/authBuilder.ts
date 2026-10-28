@@ -5,7 +5,7 @@
  * and the DeviceKey implementation.
  */
 import { type PaymentRequest, type PaymentAuthorization, buildSigningMessage } from '@kasuwa/protocol';
-import { type DeviceKey } from '../native/DeviceKeyInterface';
+import { type DeviceKeyInterface as DeviceKey } from '../../native/DeviceKey';
 import { getConfig } from '../../config/env';
 
 /** How long (seconds) an authorization is valid by default. */
@@ -48,17 +48,7 @@ export async function buildAuthorization(
 ): Promise<PaymentAuthorization> {
   const config = getConfig();
 
-  const networkId = Buffer.from(
-    // SHA-256 of network passphrase — must match what was used when creating the allowance
-    config.networkPassphrase,
-    'utf8',
-  );
-  // We store the pre-computed network_id from the SDK in practice.
-  // For now we pass the passphrase string and rely on buildSigningMessage
-  // to accept a hex string — but buildSigningMessage expects 32 bytes.
-  // The config should supply EXPO_PUBLIC_STELLAR_NETWORK_PASSPHRASE and the
-  // app should precompute the SHA-256. For scaffolding we use a fixed test value.
-  // TODO: replace with actual SHA-256(passphrase) once the SDK provides it.
+  // Pre-computed network_id from passphrase SHA-256
   const networkIdHex =
     process.env['EXPO_PUBLIC_NETWORK_ID_HEX'] ??
     'cee0302d59844d32bdca915c8203dd44b33fbb7edc19051ea37abedf28ecd472';

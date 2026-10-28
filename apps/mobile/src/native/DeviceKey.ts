@@ -9,22 +9,21 @@
  * is only linked when actually needed. This avoids build errors in
  * environments where the native module is not compiled (e.g., bare Jest).
  */
-import { Platform } from 'react-native';
-import { SoftwareDeviceKey } from './SoftwareDeviceKey';
-import { type DeviceKey, DeviceKeyError, DeviceKeyErrorCode } from './DeviceKeyInterface';
+import { SoftwareDeviceKey } from './SoftwareDeviceKey.js';
+import { type DeviceKey as IDeviceKey, DeviceKeyError, DeviceKeyErrorCode } from './DeviceKeyInterface.js';
 
-export { DeviceKey, DeviceKeyError, DeviceKeyErrorCode };
-export type { DeviceKey as DeviceKeyInterface };
+export { DeviceKeyError, DeviceKeyErrorCode };
+export type { IDeviceKey as DeviceKeyInterface };
 
 /**
  * Attempt to load the native module. Returns null in environments where
  * native modules are not available (Jest, Expo Go, CI).
  */
-function tryLoadNative(): DeviceKey | null {
+function tryLoadNative(): IDeviceKey | null {
   if (__DEV__) return null; // always use software in dev / simulator
   try {
     // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const mod = require('./KasuwaKeyModule') as { KasuwaKeyModule: DeviceKey };
+    const mod = require('./KasuwaKeyModule') as { KasuwaKeyModule: IDeviceKey };
     return mod.KasuwaKeyModule;
   } catch {
     return null;
@@ -39,7 +38,7 @@ const _native = tryLoadNative();
  * In __DEV__ or when native modules are unavailable, this is SoftwareDeviceKey.
  * In release builds on real hardware, this is the native Keystore / Secure Enclave module.
  */
-export const DeviceKey: DeviceKey = _native ?? SoftwareDeviceKey;
+export const DeviceKey: IDeviceKey = _native ?? SoftwareDeviceKey;
 
 /**
  * True if the active implementation is the software fallback.
