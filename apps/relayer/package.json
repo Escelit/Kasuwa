@@ -16,6 +16,7 @@
     "@kasuwa/db": "workspace:*",
     "@kasuwa/protocol": "workspace:*",
     "@kasuwa/sdk": "workspace:*",
+    "@stellar/stellar-sdk": "^17.4.0",
     "bullmq": "^5.81.5",
     "fastify": "^4.29.1",
     "fastify-plugin": "^4.5.1",

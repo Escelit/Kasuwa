@@ -1,29 +1,72 @@
-/**
- * BullMQ queue stub for Commit 7.
- *
- * Real BullMQ connection is wired in Commit 8 (chain submission).
- * For now this provides the same interface so routes don't need to change.
- */
+import { Queue } from 'bullmq';
+import { loadConfig } from './config.js';
+import { globalMetrics } from './metrics/MetricsCollector.js';
 
 export interface SettlementJob {
   paymentId: string;
   rawBytesB64: string;
 }
 
-// In-memory queue (for tests and Commit 7 stub)
-const jobQueue: SettlementJob[] = [];
+let bullQueue: Queue<SettlementJob> | null = null;
+const inMemoryQueue: SettlementJob[] = [];
 
+/**
+ * Returns or initializes the BullMQ Queue instance.
+ */
+export function getQueue(): Queue<SettlementJob> | null {
+  const config = loadConfig();
+  if (config.NODE_ENV === 'test') {
+    return null; // Use in-memory queue in unit tests
+  }
+
+  if (!bullQueue && config.REDIS_URL) {
+    try {
+      bullQueue = new Queue<SettlementJob>('settlements', {
+        connection: {
+          url: config.REDIS_URL,
+        },
+        defaultJobOptions: {
+          attempts: 3,
+          backoff: {
+            type: 'exponential',
+            delay: 1000,
+          },
+          removeOnComplete: true,
+          removeOnFail: false,
+        },
+      });
+    } catch {
+      bullQueue = null;
+    }
+  }
+
+  return bullQueue;
+}
+
+/**
+ * Enqueues a settlement job into BullMQ (or in-memory if in test/fallback).
+ */
 export async function enqueueSettlement(job: SettlementJob): Promise<void> {
-  // In Commit 8 this becomes: await queue.add('settle', job, { jobId: job.paymentId, ... })
-  jobQueue.push(job);
+  const queue = getQueue();
+  if (queue) {
+    await queue.add('settle', job, {
+      jobId: job.paymentId,
+    });
+    const count = await queue.getWaitingCount();
+    globalMetrics.setQueueDepth(count);
+  } else {
+    inMemoryQueue.push(job);
+    globalMetrics.setQueueDepth(inMemoryQueue.length);
+  }
 }
 
-/** For tests: inspect the queue */
+/** For tests: inspect queue */
 export function _getQueuedJobs(): SettlementJob[] {
-  return [...jobQueue];
+  return [...inMemoryQueue];
 }
 
-/** For tests: clear */
+/** For tests: clear queue */
 export function _clearQueue(): void {
-  jobQueue.length = 0;
+  inMemoryQueue.length = 0;
+  globalMetrics.setQueueDepth(0);
 }

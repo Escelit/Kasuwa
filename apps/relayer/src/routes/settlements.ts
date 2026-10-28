@@ -123,6 +123,8 @@ export async function settlementRoutes(
         updatedAt: record.updatedAt,
         onChainResult: record.onChainResult,
         error: record.error,
+        paid: record.paid !== undefined && record.paid !== null ? record.paid.toString() : null,
+        shortfall: record.shortfall !== undefined && record.shortfall !== null ? record.shortfall.toString() : null,
       });
     },
   );

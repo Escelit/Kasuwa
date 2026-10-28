@@ -24,14 +24,17 @@ const RelayerConfigSchema = z.object({
   // Auth — comma-separated list of API keys
   RELAYER_API_KEYS: z.string().min(1),
 
-  // Channel accounts & fee-bump (settlement — not used in Commit 7)
+  // Channel accounts & fee-bump (settlement)
   RELAYER_CHANNEL_ACCOUNTS: z.coerce.number().int().min(1).default(3),
+  RELAYER_CHANNEL_SECRETS: z.string().optional(),
+  RELAYER_FEE_PAYER_SECRET: z.string().optional(),
+  RELAYER_KMS_KEY_ID: z.string().optional(),
 
   // Sentry (optional)
   SENTRY_DSN: z.string().optional(),
 
-  // Validation limits
-  MAX_BATCH_SIZE: z.coerce.number().int().min(1).max(100).default(50),
+  // Validation limits (AllowanceVault::MAX_BATCH_SIZE = 25)
+  MAX_BATCH_SIZE: z.coerce.number().int().min(1).max(100).default(25),
 });
 
 export type RelayerConfig = z.infer<typeof RelayerConfigSchema>;

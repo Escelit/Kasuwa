@@ -6,7 +6,13 @@
  */
 import { type PaymentAuthorization } from '@kasuwa/protocol';
 
-export type SettlementStatus = 'accepted' | 'submitting' | 'settled' | 'failed';
+export type SettlementStatus =
+  | 'accepted'
+  | 'submitting'
+  | 'settled'
+  | 'partial'
+  | 'rejected'
+  | 'failed';
 
 export interface SettlementRecord {
   paymentId: string;
@@ -20,6 +26,8 @@ export interface SettlementRecord {
   updatedAt: number;
   onChainResult: string | null;
   error: string | null;
+  paid?: bigint | null;
+  shortfall?: bigint | null;
 }
 
 // Keyed by paymentId hex
@@ -58,7 +66,12 @@ export function getRecord(paymentIdHex: string): SettlementRecord | undefined {
 
 export function updateRecord(
   paymentIdHex: string,
-  updates: Partial<Pick<SettlementRecord, 'status' | 'onChainResult' | 'error'>>,
+  updates: Partial<
+    Pick<
+      SettlementRecord,
+      'status' | 'onChainResult' | 'error' | 'paid' | 'shortfall'
+    >
+  >,
 ): void {
   const rec = store.get(paymentIdHex);
   if (!rec) return;
