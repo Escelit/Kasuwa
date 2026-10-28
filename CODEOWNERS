@@ -1,0 +1,11 @@
+# Kasuwa Codeowners
+
+# Default maintainers for the repository
+* @kasuwa/maintainers
+
+# Security-sensitive areas requiring maintainer review (minimum two reviewers)
+/contracts/                     @kasuwa/maintainers @kasuwa/security
+/packages/protocol/             @kasuwa/maintainers @kasuwa/security
+/apps/mobile/src/native/        @kasuwa/maintainers @kasuwa/mobile-lead
+/apps/relayer/src/signers/      @kasuwa/maintainers @kasuwa/infra-lead
+/infra/kms/                     @kasuwa/maintainers @kasuwa/infra-lead

@@ -134,3 +134,25 @@ All `DeviceKey.test.ts` tests should pass.
 | Older Android (TEE only) | TEE | ✓ | ✗ | [ ] |
 | iOS Simulator | Software fallback | N/A | N/A | [ ] |
 | Android Emulator | Software fallback | N/A | N/A | [ ] |
+
+---
+
+## 7. Automated Non-Camera E2E Suite & QR Injection Hooks
+
+For headless CI environments where pointing physical cameras between emulators is impractical, the mobile app provides clearly named test-only hooks:
+
+```typescript
+import { __testInjectQrPayload } from '../native/testQrHook.js';
+
+// Injects raw scanned base64url payload directly into the receive verification pipeline:
+__testInjectQrPayload(qrPayload);
+```
+
+### Running the E2E Test Suite Locally
+```bash
+pnpm test:e2e
+```
+This runs `scripts/e2e.ts`, which exercises:
+1. Two-QR payment creation, signing, and local offline verification.
+2. The honest limit double-spend bounded loss scenario ($20 allowance across two $15 payments).
+3. Relayer batch settlement, indexer event ingestion, and dashboard reconciliation.

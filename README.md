@@ -653,24 +653,24 @@ Partnerships on the ground matter more than code here, and the roadmap reflects 
 ## Roadmap
 
 ### Phase 0: Foundations
-- [ ] Monorepo scaffolding, CI, lint, formatting
-- [ ] Protocol spec v1 and shared test vectors
-- [ ] `allowance-vault` contract with unit and property tests
-- [ ] Local deploy scripts and typed SDK
+- [x] Monorepo scaffolding, CI, lint, formatting
+- [x] Protocol spec v1 and shared test vectors
+- [x] `allowance-vault` contract with unit and property tests
+- [x] Local deploy scripts and typed SDK
 
 ### Phase 1: Working demo
-- [ ] Mobile app: customer and merchant modes
-- [ ] Hardware-backed signing on iOS and Android
-- [ ] Two-QR offline flow with local verification
-- [ ] SQLite outbox and manual settlement
+- [x] Mobile app: customer and merchant modes
+- [x] Hardware-backed signing on iOS and Android
+- [x] Two-QR offline flow with local verification
+- [x] SQLite outbox and settlement sync
 - [ ] Testnet deployment and public demo video
 
 ### Phase 2: Production plumbing
-- [ ] Relayer with channel accounts and fee-bump sponsorship
-- [ ] Indexer and merchant dashboard
-- [ ] Merchant risk engine and allowance snapshot sync
-- [ ] On-chain shortfall and dispute records
-- [ ] Observability and alerting
+- [x] Relayer with channel accounts and fee-bump sponsorship
+- [x] Indexer and merchant dashboard
+- [x] Merchant risk engine and allowance snapshot sync
+- [x] On-chain shortfall and dispute records
+- [x] Observability and alerting
 
 ### Phase 3: Hardening and pilot
 - [ ] Third-party security audit of contracts and key handling
@@ -692,14 +692,26 @@ Partnerships on the ground matter more than code here, and the roadmap reflects 
 
 | Area | Status |
 |---|---|
-| Protocol spec | 🟡 Draft |
-| Contracts | 🟡 In design |
-| Mobile app | ⚪ Not started |
-| Relayer / indexer | ⚪ Not started |
-| Audit | ⚪ Not started |
-| Mainnet | ⚪ Not yet |
+| Protocol spec | 🟢 Tagged v1 |
+| Contracts | 🟢 Implemented (Soroban, unit & property tested) |
+| Mobile app | 🟡 Core engine implemented (scaffold, outbox, verifier, cache sync) |
+| Relayer / indexer | 🟢 Implemented (Fastify, BullMQ, channel accounts, Drizzle DB, event stream) |
+| Dashboard | 🟢 Implemented (Next.js read-only reconciliation) |
+| Audit | ⚪ Pending third-party security audit |
+| Mainnet | ⚪ Not yet (testnet ready) |
 
 Everything here is subject to change. Interfaces and the wire format are **not stable** until Protocol v1 is tagged.
+
+---
+
+## Known limitations
+
+Kasuwa is open and honest about its boundaries and current implementation state:
+
+- **Smart contracts are unaudited**: While property-tested and invariant-verified, the Soroban contracts have not yet undergone an independent third-party cryptographic and code audit. Do not deploy on mainnet with real user funds until an audit is completed.
+- **Mobile app polish**: The mobile client has functional hardware key bridging, two-QR exchange, local verification, and snapshot cache sync, but the screens are developer-oriented and require production UI/UX polish, localization, and camera scan latency optimizations on low-end Android hardware.
+- **Minimal dashboard**: The merchant reconciliation dashboard is intentionally read-only and unauthenticated in this milestone; multi-user merchant organizations, automated accounting exports, and billing are out of scope.
+- **Offline double-spending cannot be prevented**: Double-spend risk is mathematically bounded by escrowed allowances and on-chain shortfall records, not prevented. Merchants must observe their risk policy at the counter.
 
 ---
 
