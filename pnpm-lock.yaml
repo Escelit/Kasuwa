@@ -14,6 +14,15 @@ importers:
       '@commitlint/config-conventional':
         specifier: ^19.8.1
         version: 19.8.1
+      '@kasuwa/db':
+        specifier: workspace:*
+        version: link:packages/db
+      '@kasuwa/protocol':
+        specifier: workspace:*
+        version: link:packages/protocol
+      '@kasuwa/sdk':
+        specifier: workspace:*
+        version: link:packages/sdk
       '@stellar/stellar-sdk':
         specifier: ^17.4.0
         version: 17.4.0

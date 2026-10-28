@@ -1,0 +1,47 @@
+appId: com.kasuwa.mobile
+---
+# Kasuwa Offline-First Payment Flow (Maestro E2E)
+# Follows README.md "Try the offline demo"
+
+- launchApp:
+    clearState: true
+
+# ── Phase 1: Setup Customer Allowance (Online) ──
+- assertVisible: "Kasuwa"
+- tapOn: "Customer Mode"
+- tapOn: "Create Allowance"
+- inputText: "20"
+- tapOn: "Confirm & Escrow"
+- assertVisible: "Allowance Active"
+
+# ── Phase 2: Offline Airplane Mode Flow ──
+- setAirplaneMode: true
+- assertVisible: "Offline Mode Active"
+
+# Merchant creates PaymentRequest
+- tapOn: "Switch to Merchant Mode"
+- tapOn: "New Payment Request"
+- inputText: "15"
+- tapOn: "Generate Request QR"
+- assertVisible: "Scan Request QR"
+
+# Customer scans request, confirms biometrics, generates PaymentAuthorization QR
+# (In automated emulator testing, __testInjectQrPayload simulates camera optical scan)
+- tapOn: "Switch to Customer Mode"
+- tapOn: "Scan Merchant QR"
+- assertVisible: "Confirm Payment of 15 USDC"
+- tapOn: "Authorize & Sign"
+- assertVisible: "Payment Authorization QR"
+
+# Merchant scans authorization, verifies locally, stores in outbox
+- tapOn: "Switch to Merchant Mode"
+- tapOn: "Scan Customer Authorization"
+- assertVisible: "Verified offline ✓"
+- tapOn: "View Outbox"
+- assertVisible: "1 payment queued"
+
+# ── Phase 3: Settle When Reconnected ──
+- setAirplaneMode: false
+- tapOn: "Sync & Settle Outbox"
+- assertVisible: "Settled ✓"
+- assertVisible: "15.00 USDC"

@@ -111,3 +111,27 @@ jobs:
 
       - name: Run protocol vectors suite
         run: pnpm test:vectors
+
+  e2e:
+    name: End-to-End Integration
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run Non-Camera E2E Suite (Double-Spend Bounded Loss)
+        run: pnpm test:e2e

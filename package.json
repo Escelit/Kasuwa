@@ -10,6 +10,7 @@
     "typecheck": "turbo typecheck",
     "lint": "turbo lint && cargo fmt --check && cargo clippy --all-targets -- -D warnings",
     "test": "turbo test && cargo test",
+    "test:e2e": "tsx scripts/e2e.ts",
     "test:vectors": "turbo test:vectors",
     "test:integration": "vitest run packages/sdk/test/integration.test.ts",
     "contracts:build": "bash scripts/contracts-build.sh",
@@ -23,6 +24,9 @@
   "devDependencies": {
     "@commitlint/cli": "^19.8.1",
     "@commitlint/config-conventional": "^19.8.1",
+    "@kasuwa/db": "workspace:*",
+    "@kasuwa/protocol": "workspace:*",
+    "@kasuwa/sdk": "workspace:*",
     "@stellar/stellar-sdk": "^17.4.0",
     "@types/node": "^26.6.5",
     "husky": "^9.1.7",
