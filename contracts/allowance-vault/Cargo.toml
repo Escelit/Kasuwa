@@ -7,10 +7,10 @@ edition = "2021"
 crate-type = ["cdylib", "rlib"]
 
 [dependencies]
-soroban-sdk = { version = "28.0.0", features = ["hazmat"] }
+soroban-sdk = { version = "29.0.1", features = ["hazmat"] }
 
 [dev-dependencies]
-soroban-sdk = { version = "28.0.0", features = ["testutils"] }
+soroban-sdk = { version = "29.0.1", features = ["testutils"] }
 p256 = { version = "0.13.2", features = ["ecdsa"] }
 proptest = "1.5.0"
 hex = "0.4.3"
