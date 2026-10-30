@@ -127,5 +127,8 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Build workspace packages
+        run: pnpm turbo build
+
       - name: Run Non-Camera E2E Suite (Double-Spend Bounded Loss)
         run: pnpm test:e2e
