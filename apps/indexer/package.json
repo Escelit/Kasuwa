@@ -15,7 +15,7 @@
     "@kasuwa/db": "workspace:*",
     "@kasuwa/protocol": "workspace:*",
     "@stellar/stellar-sdk": "^17.4.0",
-    "fastify": "^4.29.1",
+    "fastify": "^5.12.7",
     "zod": "^3.25.76"
   },
   "devDependencies": {
