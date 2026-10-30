@@ -42,7 +42,7 @@
     "@babel/core": "^7.29.7",
     "@kasuwa/config": "workspace:*",
     "@testing-library/jest-native": "^5.4.3",
-    "@testing-library/react-native": "^12.9.0",
+    "@testing-library/react-native": "^14.1.0",
     "@types/react": "~18.2.79",
     "@types/react-native": "^0.73.0",
     "babel-jest": "^29.7.0",
