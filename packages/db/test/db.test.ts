@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { InMemoryKasuwaDb } from '../src/index.js';
+import { InMemoryKasuwaDb, PostgresKasuwaDb, IKasuwaDb } from '../src/index.js';
 
 describe('packages/db - Schema and InMemoryKasuwaDb', () => {
   let db: InMemoryKasuwaDb;
@@ -101,5 +101,14 @@ describe('packages/db - Schema and InMemoryKasuwaDb', () => {
     const saved = await db.cursor.get();
     expect(saved?.lastLedger).toBe(12345);
     expect(saved?.lastCursor).toBe('cursor_token_xyz');
+  });
+
+  it('exposes PostgresKasuwaDb conforming to IKasuwaDb', () => {
+    const dummyMockDb: any = {};
+    const pgDb: IKasuwaDb = new PostgresKasuwaDb(dummyMockDb);
+    expect(pgDb.allowances).toBeDefined();
+    expect(pgDb.settlements).toBeDefined();
+    expect(pgDb.shortfalls).toBeDefined();
+    expect(pgDb.cursor).toBeDefined();
   });
 });
