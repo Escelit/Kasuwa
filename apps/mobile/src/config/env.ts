@@ -36,6 +36,8 @@ export interface AppConfig {
   tokenContractId: string;
   /** Relayer API base URL (used by outbox for settlement) */
   relayerUrl: string;
+  /** Relayer API authorization key */
+  relayerApiKey: string;
 }
 
 let _config: AppConfig | null = null;
@@ -56,6 +58,7 @@ export function getConfig(): AppConfig {
     vaultContractId: optionalEnv('EXPO_PUBLIC_VAULT_CONTRACT_ID', ''),
     tokenContractId: optionalEnv('EXPO_PUBLIC_TOKEN_CONTRACT_ID', ''),
     relayerUrl: optionalEnv('EXPO_PUBLIC_RELAYER_URL', 'http://localhost:3001'),
+    relayerApiKey: optionalEnv('EXPO_PUBLIC_RELAYER_API_KEY', 'kasuwa-dev-client-key'),
   };
 
   return _config;

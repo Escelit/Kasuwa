@@ -38,6 +38,7 @@ const config: ExpoConfig = {
     ],
     'expo-secure-store',
     'expo-local-authentication',
+    './plugins/withKasuwaKeyModule',
   ],
   extra: {
     // All runtime config comes from EXPO_PUBLIC_* env vars only (no secrets).
