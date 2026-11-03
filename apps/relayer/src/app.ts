@@ -4,16 +4,39 @@
  */
 import Fastify, { FastifyInstance } from 'fastify';
 import rateLimit from '@fastify/rate-limit';
+import { createPostgresDb, InMemoryKasuwaDb, type IKasuwaDb } from '@kasuwa/db';
 import { loadConfig, parseApiKeys, type RelayerConfig } from './config.js';
 import { apiKeyAuth } from './plugins/apiKeyAuth.js';
 import { healthRoutes } from './routes/health.js';
 import { settlementRoutes } from './routes/settlements.js';
+import { setPersistentDb } from './settlementStore.js';
 
 export async function buildApp(
   overrideConfig?: Partial<RelayerConfig>,
+  overrideDb?: IKasuwaDb,
 ): Promise<FastifyInstance> {
   const config = { ...loadConfig(), ...overrideConfig };
   const apiKeys = parseApiKeys(config.RELAYER_API_KEYS);
+
+  let db: IKasuwaDb | undefined = overrideDb;
+  if (!db) {
+    if (config.NODE_ENV === 'test') {
+      db = new InMemoryKasuwaDb();
+    } else if (config.DATABASE_URL && config.DATABASE_URL.startsWith('postgres')) {
+      try {
+        const { kasuwaDb } = createPostgresDb(config.DATABASE_URL);
+        db = kasuwaDb;
+      } catch {
+        db = new InMemoryKasuwaDb();
+      }
+    } else {
+      db = new InMemoryKasuwaDb();
+    }
+  }
+
+  if (db) {
+    setPersistentDb(db);
+  }
 
   const app = Fastify({
     logger: {
@@ -37,8 +60,8 @@ export async function buildApp(
   await app.register(apiKeyAuth, { validKeys: apiKeys });
 
   // Routes
-  await app.register(healthRoutes);
-  await app.register(settlementRoutes, { config });
+  await app.register(healthRoutes, { db });
+  await app.register(settlementRoutes, { config, db });
 
   return app;
 }

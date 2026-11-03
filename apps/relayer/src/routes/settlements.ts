@@ -2,8 +2,12 @@
  * POST /v1/settlements — accepts one or many base64url PaymentAuthorizations.
  * GET  /v1/settlements/:paymentId — returns status and on-chain result.
  */
+import crypto from 'node:crypto';
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { z } from 'zod';
+import { StrKey } from '@stellar/stellar-sdk';
+import { decodePaymentAuthorization } from '@kasuwa/protocol';
+import { type IKasuwaDb } from '@kasuwa/db';
 import { preValidate } from '../preValidate.js';
 import { upsertRecord, getRecord } from '../settlementStore.js';
 import { enqueueSettlement } from '../queue.js';
@@ -26,7 +30,7 @@ interface SubmitItemResult {
 
 export async function settlementRoutes(
   app: FastifyInstance,
-  opts: { config: RelayerConfig },
+  opts: { config: RelayerConfig; db?: IKasuwaDb },
 ): Promise<void> {
   // ── POST /v1/settlements ─────────────────────────────────────────────────
   app.post(
@@ -53,20 +57,52 @@ export async function settlementRoutes(
         });
       }
 
+      let contractIdBuf: Buffer;
+      if (
+        opts.config.VAULT_CONTRACT_ID.startsWith('C') &&
+        opts.config.VAULT_CONTRACT_ID.length === 56
+      ) {
+        try {
+          contractIdBuf = Buffer.from(StrKey.decodeContract(opts.config.VAULT_CONTRACT_ID));
+        } catch {
+          contractIdBuf = Buffer.alloc(32);
+        }
+      } else if (/^[0-9a-fA-F]{64}$/.test(opts.config.VAULT_CONTRACT_ID)) {
+        contractIdBuf = Buffer.from(opts.config.VAULT_CONTRACT_ID, 'hex');
+      } else {
+        contractIdBuf = Buffer.alloc(32);
+      }
+
+      const networkId = crypto
+        .createHash('sha256')
+        .update(opts.config.STELLAR_NETWORK_PASSPHRASE)
+        .digest();
+
       const ctx = {
-        contractId: Buffer.from(opts.config.VAULT_CONTRACT_ID, 'hex').length === 32
-          ? Buffer.from(opts.config.VAULT_CONTRACT_ID, 'hex')
-          : Buffer.alloc(32), // placeholder for non-hex contract IDs (Strkey)
-        networkId: Buffer.alloc(32), // TODO: derive from STELLAR_NETWORK_PASSPHRASE SHA-256
+        contractId: contractIdBuf,
+        networkId,
       };
 
       const results: SubmitItemResult[] = [];
 
       for (const encoded of authorizations) {
+        let devicePublicKeyHex: string | null = null;
+        if (opts.db) {
+          try {
+            const peekAuth = decodePaymentAuthorization(Buffer.from(encoded, 'base64url'));
+            const allowance = await opts.db.allowances.get(peekAuth.allowanceId.toString());
+            if (allowance) {
+              devicePublicKeyHex = allowance.deviceKeyHex;
+            }
+          } catch {
+            // Decoding failure handled in preValidate
+          }
+        }
+
         // Pre-validate strictly — invalid items never enqueue
         const validation = preValidate({
           encoded,
-          devicePublicKeyHex: null, // Commit 7: sig check skipped (no indexer lookup yet)
+          devicePublicKeyHex,
           ctx,
         });
 

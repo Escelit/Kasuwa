@@ -1,10 +1,8 @@
 /**
- * In-memory settlement record store (stub for Commit 7).
- *
- * In Commit 8 this is replaced by the Postgres-backed packages/db layer.
- * The interface is the same so the routes don't change.
+ * Settlement record store with in-memory caching and optional PostgreSQL persistence.
  */
 import { type PaymentAuthorization } from '@kasuwa/protocol';
+import { type IKasuwaDb } from '@kasuwa/db';
 
 export type SettlementStatus =
   | 'accepted'
@@ -32,6 +30,11 @@ export interface SettlementRecord {
 
 // Keyed by paymentId hex
 const store = new Map<string, SettlementRecord>();
+let _persistentDb: IKasuwaDb | null = null;
+
+export function setPersistentDb(db: IKasuwaDb | null): void {
+  _persistentDb = db;
+}
 
 /** Returns [record, isNew] */
 export function upsertRecord(
@@ -57,6 +60,25 @@ export function upsertRecord(
     error: null,
   };
   store.set(paymentIdHex, record);
+
+  if (_persistentDb) {
+    _persistentDb.settlements
+      .upsert({
+        paymentId: paymentIdHex,
+        allowanceId: record.allowanceId,
+        merchant: record.merchant,
+        amount: record.amount.toString(),
+        expiresAt: record.expiresAt,
+        status: record.status,
+        rawBytes: rawB64,
+        acceptedAt: record.acceptedAt,
+        updatedAt: record.updatedAt,
+      })
+      .catch((err) => {
+        console.warn(`[settlementStore] Async DB upsert failed for ${paymentIdHex}:`, err);
+      });
+  }
+
   return [record, true];
 }
 
@@ -75,10 +97,35 @@ export function updateRecord(
 ): void {
   const rec = store.get(paymentIdHex);
   if (!rec) return;
-  Object.assign(rec, updates, { updatedAt: Math.floor(Date.now() / 1000) });
+  const now = Math.floor(Date.now() / 1000);
+  Object.assign(rec, updates, { updatedAt: now });
+
+  if (_persistentDb) {
+    _persistentDb.settlements
+      .upsert({
+        paymentId: paymentIdHex,
+        allowanceId: rec.allowanceId,
+        merchant: rec.merchant,
+        amount: rec.amount.toString(),
+        expiresAt: rec.expiresAt,
+        status: rec.status,
+        paid: rec.paid !== undefined && rec.paid !== null ? rec.paid.toString() : null,
+        shortfall:
+          rec.shortfall !== undefined && rec.shortfall !== null ? rec.shortfall.toString() : null,
+        onChainResult: rec.onChainResult ?? null,
+        lastError: rec.error ?? null,
+        rawBytes: rec.rawBytesB64,
+        acceptedAt: rec.acceptedAt,
+        updatedAt: now,
+      })
+      .catch((err) => {
+        console.warn(`[settlementStore] Async DB update failed for ${paymentIdHex}:`, err);
+      });
+  }
 }
 
 /** For tests: clear all state */
 export function _clearStore(): void {
   store.clear();
+  _persistentDb = null;
 }
