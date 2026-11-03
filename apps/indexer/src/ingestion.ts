@@ -1,4 +1,5 @@
 import { IKasuwaDb } from '@kasuwa/db';
+import { rpc, scValToNative } from '@stellar/stellar-sdk';
 import { IndexerConfig } from './config.js';
 
 export interface IngestionEvent {
@@ -32,6 +33,198 @@ export interface SorobanRpcEventStreamer {
     latestLedger: number;
     cursor?: string;
   }>;
+}
+
+/**
+ * Concrete SorobanRpcEventStreamer querying real Soroban RPC Server.
+ */
+export class LiveSorobanRpcEventStreamer implements SorobanRpcEventStreamer {
+  private readonly rpcServer: rpc.Server;
+  private readonly contractId: string;
+
+  constructor(rpcUrl: string, contractId: string, opts?: { allowHttp?: boolean }) {
+    this.rpcServer = new rpc.Server(rpcUrl, {
+      allowHttp: opts?.allowHttp ?? rpcUrl.startsWith('http://'),
+    });
+    this.contractId = contractId;
+  }
+
+  async getLatestLedger(): Promise<number> {
+    const res = await this.rpcServer.getLatestLedger();
+    return res.sequence;
+  }
+
+  async fetchEvents(
+    startLedger: number,
+    cursor?: string,
+  ): Promise<{
+    events: IngestionEvent[];
+    latestLedger: number;
+    cursor?: string;
+  }> {
+    const filters = [
+      {
+        type: 'contract' as const,
+        contractIds: [this.contractId],
+      },
+    ];
+
+    const request = cursor
+      ? { cursor, filters, limit: 100 }
+      : { startLedger, filters, limit: 100 };
+
+    const response = await this.rpcServer.getEvents(request as any);
+
+    const parsedEvents: IngestionEvent[] = [];
+
+    for (const rawEvent of response.events) {
+      try {
+        const topics = rawEvent.topic.map((t) => scValToNative(t));
+        const data = scValToNative(rawEvent.value);
+        const eventTypeSym = topics[0]?.toString?.() ?? '';
+        const contractIdStr = rawEvent.contractId?.toString() ?? this.contractId;
+
+        if (eventTypeSym === 'created') {
+          const allowanceId = topics[1]?.toString() ?? '0';
+          const [owner, token, amount, validUntil, perPaymentCap] = Array.isArray(data) ? data : [];
+          parsedEvents.push({
+            id: rawEvent.id,
+            ledger: rawEvent.ledger,
+            ledgerClosedAt: Math.floor(new Date(rawEvent.ledgerClosedAt).getTime() / 1000),
+            contractId: contractIdStr,
+            eventType: 'created',
+            allowanceId,
+            data: {
+              owner: owner?.toString(),
+              token: token?.toString(),
+              amount: amount?.toString(),
+              validUntil: Number(validUntil),
+              perPaymentCap: perPaymentCap?.toString(),
+            },
+          });
+        } else if (eventTypeSym === 'top_up') {
+          const allowanceId = topics[1]?.toString() ?? '0';
+          const [owner, amount, balance] = Array.isArray(data) ? data : [];
+          parsedEvents.push({
+            id: rawEvent.id,
+            ledger: rawEvent.ledger,
+            ledgerClosedAt: Math.floor(new Date(rawEvent.ledgerClosedAt).getTime() / 1000),
+            contractId: contractIdStr,
+            eventType: 'top_up',
+            allowanceId,
+            data: {
+              owner: owner?.toString(),
+              amount: amount?.toString(),
+              balance: balance?.toString(),
+            },
+          });
+        } else if (eventTypeSym === 'close_req') {
+          const allowanceId = topics[1]?.toString() ?? '0';
+          const [owner, closeRequestedAt] = Array.isArray(data) ? data : [];
+          parsedEvents.push({
+            id: rawEvent.id,
+            ledger: rawEvent.ledger,
+            ledgerClosedAt: Math.floor(new Date(rawEvent.ledgerClosedAt).getTime() / 1000),
+            contractId: contractIdStr,
+            eventType: 'close_req',
+            allowanceId,
+            data: {
+              owner: owner?.toString(),
+              closeRequestedAt: Number(closeRequestedAt),
+            },
+          });
+        } else if (eventTypeSym === 'reclaim') {
+          const allowanceId = topics[1]?.toString() ?? '0';
+          const [owner, remaining] = Array.isArray(data) ? data : [];
+          parsedEvents.push({
+            id: rawEvent.id,
+            ledger: rawEvent.ledger,
+            ledgerClosedAt: Math.floor(new Date(rawEvent.ledgerClosedAt).getTime() / 1000),
+            contractId: contractIdStr,
+            eventType: 'reclaim',
+            allowanceId,
+            data: {
+              owner: owner?.toString(),
+              amount: remaining?.toString(),
+            },
+          });
+        } else if (eventTypeSym === 'settle') {
+          const allowanceId = topics[1]?.toString() ?? '0';
+          const paymentIdRaw = topics[2];
+          const paymentId = Buffer.isBuffer(paymentIdRaw)
+            ? paymentIdRaw.toString('hex')
+            : paymentIdRaw instanceof Uint8Array
+              ? Buffer.from(paymentIdRaw).toString('hex')
+              : String(paymentIdRaw);
+
+          if (Array.isArray(data)) {
+            const merchant = data[0]?.toString() ?? '';
+            if (data.length === 3 && Number(data[2]) === 0) {
+              // Settled
+              parsedEvents.push({
+                id: rawEvent.id,
+                ledger: rawEvent.ledger,
+                ledgerClosedAt: Math.floor(new Date(rawEvent.ledgerClosedAt).getTime() / 1000),
+                contractId: contractIdStr,
+                eventType: 'settle',
+                allowanceId,
+                paymentId,
+                data: {
+                  merchant,
+                  amount: data[1]?.toString(),
+                  paid: data[1]?.toString(),
+                  shortfall: '0',
+                  settleResult: 'Settled',
+                },
+              });
+            } else if (data.length === 4 && Number(data[3]) === 1) {
+              // Partial
+              parsedEvents.push({
+                id: rawEvent.id,
+                ledger: rawEvent.ledger,
+                ledgerClosedAt: Math.floor(new Date(rawEvent.ledgerClosedAt).getTime() / 1000),
+                contractId: contractIdStr,
+                eventType: 'settle',
+                allowanceId,
+                paymentId,
+                data: {
+                  merchant,
+                  paid: data[1]?.toString(),
+                  shortfall: data[2]?.toString(),
+                  settleResult: 'Partial',
+                },
+              });
+            } else if (data.length === 4 && Number(data[3]) === 2) {
+              // Insufficient
+              parsedEvents.push({
+                id: rawEvent.id,
+                ledger: rawEvent.ledger,
+                ledgerClosedAt: Math.floor(new Date(rawEvent.ledgerClosedAt).getTime() / 1000),
+                contractId: contractIdStr,
+                eventType: 'settle',
+                allowanceId,
+                paymentId,
+                data: {
+                  merchant,
+                  paid: '0',
+                  shortfall: data[2]?.toString(),
+                  settleResult: 'Insufficient',
+                },
+              });
+            }
+          }
+        }
+      } catch (parseErr) {
+        console.warn(`[indexer] Failed to parse contract event ${rawEvent.id}:`, parseErr);
+      }
+    }
+
+    return {
+      events: parsedEvents,
+      latestLedger: response.latestLedger,
+      cursor: response.cursor,
+    };
+  }
 }
 
 export class IngestionService {

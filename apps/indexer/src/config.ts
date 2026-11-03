@@ -16,6 +16,9 @@ const IndexerConfigSchema = z.object({
   // Confirmation depth for Stellar SCP finality (1 ledger is final on Stellar)
   CONFIRMATION_DEPTH: z.coerce.number().int().min(1).default(1),
 
+  // Polling interval in ms for event ingestion
+  POLL_INTERVAL_MS: z.coerce.number().int().min(500).default(5000),
+
   // Optional manual backfill starting ledger
   START_LEDGER: z.coerce.number().int().optional(),
 });
