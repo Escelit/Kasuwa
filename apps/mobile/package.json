@@ -15,7 +15,7 @@
     "ios": "expo run:ios"
   },
   "dependencies": {
-    "@expo/vector-icons": "^14.1.0",
+    "@expo/vector-icons": "^15.1.1",
     "@kasuwa/protocol": "workspace:*",
     "@kasuwa/risk": "workspace:*",
     "@kasuwa/sdk": "workspace:*",
